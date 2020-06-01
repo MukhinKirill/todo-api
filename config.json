@@ -1,0 +1,4 @@
+{
+    "connectionString": "user=tester password=test host=idm.centos.myidm.local port=5432 dbname=testdb sslmode=disable",
+    "port": 15645 
+}
