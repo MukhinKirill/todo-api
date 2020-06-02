@@ -37,9 +37,9 @@ func main() {
 	}
 	defer postgres.Close()
 	postgres.DbInit()
-	mux := handler.SetUpRouting(postgres)
+	router := handler.SetUpRouting(postgres)
 	portStr := fmt.Sprintf(":%d", config.Port)
 	fmt.Printf("http://localhost%s", portStr)
 
-	log.Fatal(http.ListenAndServe(portStr, mux))
+	log.Fatal(http.ListenAndServe(portStr, router))
 }

@@ -4,28 +4,40 @@ import (
 	"net/http"
 
 	db "../db"
+	"github.com/gorilla/mux"
 )
 
-func SetUpRouting(postgres *db.Postgres) *http.ServeMux {
+func SetUpRouting(postgres *db.Postgres) *mux.Router {
 	todoHandler := &todoHandler{
 		postgres: postgres,
 	}
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/todo", func(w http.ResponseWriter, r *http.Request) {
+	router := mux.NewRouter()
+	router.HandleFunc("/todo", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
 			todoHandler.getAllTodo(w, r)
 		case http.MethodPost:
 			todoHandler.saveTodo(w, r)
-		case http.MethodPut:
-			todoHandler.updateTodo(w, r)
-		case http.MethodDelete:
-			todoHandler.deleteTodo(w, r)
 		default:
 			responseError(w, http.StatusNotFound, "")
 		}
 	})
+	router.HandleFunc("/todo/{id:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		id := vars["id"]
+		switch r.Method {
+		case http.MethodGet:
 
-	return mux
+			todoHandler.getTodo(w, r, id)
+		case http.MethodPut:
+			todoHandler.updateTodo(w, r, id)
+		case http.MethodDelete:
+			todoHandler.deleteTodo(w, r, id)
+		default:
+			responseError(w, http.StatusNotFound, "")
+		}
+	})
+	http.Handle("/", router)
+	return router
 }

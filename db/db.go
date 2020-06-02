@@ -73,14 +73,14 @@ func (p *Postgres) Insert(todo *model.Todo) (int, error) {
 	return id, nil
 }
 
-func (p *Postgres) Update(todo *model.Todo) (int, error) {
+func (p *Postgres) Update(todo *model.Todo, idStr string) (int, error) {
 	query := `
 		UPDATE todo SET title = $2, note= $3, note_date = $4
 		WHERE id = $1
 		RETURNING id;
 	`
 
-	rows, err := p.DB.Query(query, todo.ID, todo.Title, todo.Note, todo.NoteDate)
+	rows, err := p.DB.Query(query, idStr, todo.Title, todo.Note, todo.NoteDate)
 	if err != nil {
 		return -1, err
 	}
@@ -95,7 +95,7 @@ func (p *Postgres) Update(todo *model.Todo) (int, error) {
 	return id, nil
 }
 
-func (p *Postgres) Delete(id int) error {
+func (p *Postgres) Delete(id string) error {
 	query := `
 		DELETE FROM todo
 		WHERE id = $1;
@@ -130,4 +130,29 @@ func (p *Postgres) GetAll() ([]model.Todo, error) {
 	}
 
 	return todoList, nil
+}
+
+func (p *Postgres) GetOne(id string) (model.Todo, error) {
+	query := `
+		SELECT *
+		FROM todo
+		WHERE id=$1;
+	`
+
+	var todo model.Todo
+	rows, err := p.DB.Query(query, id)
+	if err != nil {
+		return todo, err
+	}
+
+	var todoList []model.Todo
+	for rows.Next() {
+		var t model.Todo
+		if err := rows.Scan(&t.ID, &t.Title, &t.Note, &t.NoteDate); err != nil {
+			return todo, err
+		}
+		todoList = append(todoList, t)
+	}
+
+	return todoList[0], nil
 }

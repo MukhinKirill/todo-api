@@ -35,7 +35,7 @@ func (handler *todoHandler) saveTodo(w http.ResponseWriter, r *http.Request) {
 
 	responseOk(w, id)
 }
-func (handler *todoHandler) updateTodo(w http.ResponseWriter, r *http.Request) {
+func (handler *todoHandler) updateTodo(w http.ResponseWriter, r *http.Request, idStr string) {
 
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -49,7 +49,7 @@ func (handler *todoHandler) updateTodo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := handler.postgres.Update(&todo)
+	id, err := handler.postgres.Update(&todo, idStr)
 	if err != nil {
 		responseError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -57,29 +57,25 @@ func (handler *todoHandler) updateTodo(w http.ResponseWriter, r *http.Request) {
 
 	responseOk(w, id)
 }
-func (handler *todoHandler) deleteTodo(w http.ResponseWriter, r *http.Request) {
-	b, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		responseError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
+func (handler *todoHandler) deleteTodo(w http.ResponseWriter, r *http.Request, id string) {
 
-	var req struct {
-		ID int `json:"id"`
-	}
-	if err := json.Unmarshal(b, &req); err != nil {
-		responseError(w, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	if err := handler.postgres.Delete(req.ID); err != nil {
+	if err := handler.postgres.Delete(id); err != nil {
 		responseError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
 }
+func (handler *todoHandler) getTodo(w http.ResponseWriter, r *http.Request, id string) {
 
+	todoList, err := handler.postgres.GetOne(id)
+	if err != nil {
+		responseError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	responseOk(w, todoList)
+}
 func (handler *todoHandler) getAllTodo(w http.ResponseWriter, r *http.Request) {
 
 	todoList, err := handler.postgres.GetAll()
