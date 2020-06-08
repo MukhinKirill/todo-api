@@ -1,13 +1,12 @@
-package handler
+package main
 
 import (
 	"net/http"
 
-	db "../db"
 	"github.com/gorilla/mux"
 )
 
-func SetUpRouting(postgres *db.Postgres) *mux.Router {
+func SetUpRouting(postgres *Postgres) *mux.Router {
 	todoHandler := &todoHandler{
 		postgres: postgres,
 	}
@@ -28,7 +27,6 @@ func SetUpRouting(postgres *db.Postgres) *mux.Router {
 		id := vars["id"]
 		switch r.Method {
 		case http.MethodGet:
-
 			todoHandler.getTodo(w, r, id)
 		case http.MethodPut:
 			todoHandler.updateTodo(w, r, id)

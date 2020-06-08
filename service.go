@@ -1,16 +1,13 @@
-package handler
+package main
 
 import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-
-	"../db"
-	"../model"
 )
 
 type todoHandler struct {
-	postgres *db.Postgres
+	postgres *Postgres
 }
 
 func (handler *todoHandler) saveTodo(w http.ResponseWriter, r *http.Request) {
@@ -21,7 +18,7 @@ func (handler *todoHandler) saveTodo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var todo model.Todo
+	var todo Todo
 	if err := json.Unmarshal(b, &todo); err != nil {
 		responseError(w, http.StatusBadRequest, err.Error())
 		return
@@ -43,7 +40,7 @@ func (handler *todoHandler) updateTodo(w http.ResponseWriter, r *http.Request, i
 		return
 	}
 
-	var todo model.Todo
+	var todo Todo
 	if err := json.Unmarshal(b, &todo); err != nil {
 		responseError(w, http.StatusBadRequest, err.Error())
 		return

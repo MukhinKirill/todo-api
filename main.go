@@ -7,10 +7,6 @@ import (
 	"net/http"
 	"os"
 	"time"
-
-	db "./db"
-	handler "./handler"
-	model "./model"
 )
 
 func main() {
@@ -19,16 +15,16 @@ func main() {
 		panic(errf)
 	}
 	decoder := json.NewDecoder(file)
-	config := new(model.Config)
+	config := new(Config)
 	err := decoder.Decode(&config)
 	if err != nil {
 		panic(err)
 	}
-	var postgres *db.Postgres
+	var postgres *Postgres
 	var errDb error
 	for i := 0; i < 3; i++ {
 		time.Sleep(3 * time.Second)
-		postgres, errDb = db.ConnectDb(config.ConnectionString)
+		postgres, errDb = ConnectDb(config.ConnectionString)
 	}
 	if errDb != nil {
 		panic(errDb)
@@ -37,7 +33,7 @@ func main() {
 	}
 	defer postgres.Close()
 	postgres.DbInit()
-	router := handler.SetUpRouting(postgres)
+	router := SetUpRouting(postgres)
 	portStr := fmt.Sprintf(":%d", config.Port)
 	fmt.Printf("http://localhost%s", portStr)
 

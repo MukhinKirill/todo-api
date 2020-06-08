@@ -1,9 +1,7 @@
-package db
+package main
 
 import (
 	"database/sql"
-
-	model "../model"
 
 	_ "github.com/lib/pq"
 )
@@ -51,7 +49,7 @@ func (p *Postgres) DbInit() (int, error) {
 	return 0, nil
 }
 
-func (p *Postgres) Insert(todo *model.Todo) (int, error) {
+func (p *Postgres) Insert(todo *Todo) (int, error) {
 	query := `
 		INSERT INTO todo (id, title, note, note_date)
 		VALUES (nextval('todo_id'), $1, $2, $3)
@@ -73,7 +71,7 @@ func (p *Postgres) Insert(todo *model.Todo) (int, error) {
 	return id, nil
 }
 
-func (p *Postgres) Update(todo *model.Todo, idStr string) (int, error) {
+func (p *Postgres) Update(todo *Todo, idStr string) (int, error) {
 	query := `
 		UPDATE todo SET title = $2, note= $3, note_date = $4
 		WHERE id = $1
@@ -108,7 +106,7 @@ func (p *Postgres) Delete(id string) error {
 	return nil
 }
 
-func (p *Postgres) GetAll() ([]model.Todo, error) {
+func (p *Postgres) GetAll() ([]Todo, error) {
 	query := `
 		SELECT *
 		FROM todo
@@ -120,9 +118,9 @@ func (p *Postgres) GetAll() ([]model.Todo, error) {
 		return nil, err
 	}
 
-	var todoList []model.Todo
+	var todoList []Todo
 	for rows.Next() {
-		var t model.Todo
+		var t Todo
 		if err := rows.Scan(&t.ID, &t.Title, &t.Note, &t.NoteDate); err != nil {
 			return nil, err
 		}
@@ -132,22 +130,22 @@ func (p *Postgres) GetAll() ([]model.Todo, error) {
 	return todoList, nil
 }
 
-func (p *Postgres) GetOne(id string) (model.Todo, error) {
+func (p *Postgres) GetOne(id string) (Todo, error) {
 	query := `
 		SELECT *
 		FROM todo
 		WHERE id=$1;
 	`
 
-	var todo model.Todo
+	var todo Todo
 	rows, err := p.DB.Query(query, id)
 	if err != nil {
 		return todo, err
 	}
 
-	var todoList []model.Todo
+	var todoList []Todo
 	for rows.Next() {
-		var t model.Todo
+		var t Todo
 		if err := rows.Scan(&t.ID, &t.Title, &t.Note, &t.NoteDate); err != nil {
 			return todo, err
 		}
