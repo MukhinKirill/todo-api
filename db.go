@@ -57,6 +57,7 @@ func (p *Postgres) Insert(todo *Todo) (int, error) {
 	`
 
 	rows, err := p.DB.Query(query, todo.Title, todo.Note, todo.NoteDate)
+	defer rows.Close()
 	if err != nil {
 		return -1, err
 	}
@@ -79,6 +80,7 @@ func (p *Postgres) Update(todo *Todo, idStr string) (int, error) {
 	`
 
 	rows, err := p.DB.Query(query, idStr, todo.Title, todo.Note, todo.NoteDate)
+	defer rows.Close()
 	if err != nil {
 		return -1, err
 	}
@@ -98,8 +100,8 @@ func (p *Postgres) Delete(id string) error {
 		DELETE FROM todo
 		WHERE id = $1;
 	`
-
-	if _, err := p.DB.Exec(query, id); err != nil {
+	_, err := p.DB.Exec(query, id)
+	if err != nil {
 		return err
 	}
 
@@ -114,6 +116,7 @@ func (p *Postgres) GetAll() ([]Todo, error) {
 	`
 
 	rows, err := p.DB.Query(query)
+	defer rows.Close()
 	if err != nil {
 		return nil, err
 	}
@@ -139,6 +142,7 @@ func (p *Postgres) GetOne(id string) (Todo, error) {
 
 	var todo Todo
 	rows, err := p.DB.Query(query, id)
+	defer rows.Close()
 	if err != nil {
 		return todo, err
 	}
