@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	todos "./lib"
 )
 
 func main() {
@@ -15,16 +17,16 @@ func main() {
 		panic(errf)
 	}
 	decoder := json.NewDecoder(file)
-	config := new(Config)
+	config := new(todos.Config)
 	err := decoder.Decode(&config)
 	if err != nil {
 		panic(err)
 	}
-	var postgres *Postgres
+	var postgres *todos.Postgres
 	var errDb error
 	for i := 0; i < 3; i++ {
 		time.Sleep(3 * time.Second)
-		postgres, errDb = ConnectDb(config.ConnectionString)
+		postgres, errDb = todos.ConnectDb(config.ConnectionString)
 	}
 	if errDb != nil {
 		panic(errDb)
@@ -33,7 +35,7 @@ func main() {
 	}
 	defer postgres.Close()
 	postgres.DbInit()
-	router := SetUpRouting(postgres)
+	router := todos.SetUpRouting(postgres)
 	portStr := fmt.Sprintf(":%d", config.Port)
 	fmt.Printf("http://localhost%s", portStr)
 
