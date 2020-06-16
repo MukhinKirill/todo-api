@@ -12,11 +12,11 @@ func SetUpRouting(postgres *Postgres) *mux.Router {
 	}
 
 	router := mux.NewRouter()
-	router.HandleFunc("/api/todos/", todoHandler.getAllTodo).Methods("GET")
-	router.HandleFunc("/api/todos/", todoHandler.saveTodo).Methods("POST")
-	router.HandleFunc("/api/todos/{id:[0-9]+}", todoHandler.getTodo).Methods("GET")
-	router.HandleFunc("/api/todos/{id:[0-9]+}", todoHandler.updateTodo).Methods("PUT")
-	router.HandleFunc("/api/todos/{id:[0-9]+}", todoHandler.deleteTodo).Methods("DELETE")
+	router.HandleFunc("/api/todos/", todoHandler.Get).Methods("GET")
+	router.HandleFunc("/api/todos/", todoHandler.Create).Methods("POST")
+	router.HandleFunc("/api/todos/{id:[0-9]+}", todoHandler.GetById).Methods("GET")
+	router.HandleFunc("/api/todos/{id:[0-9]+}", todoHandler.Put).Methods("PUT")
+	router.HandleFunc("/api/todos/{id:[0-9]+}", todoHandler.Delete).Methods("DELETE")
 	http.Handle("/", router)
 	return router
 }

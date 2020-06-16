@@ -95,17 +95,17 @@ func (p *Postgres) Update(todo *Todo, idStr string) (int, error) {
 	return id, nil
 }
 
-func (p *Postgres) Delete(id string) error {
+func (p *Postgres) Delete(id string) (int64, error) {
 	query := `
 		DELETE FROM todo
 		WHERE id = $1;
 	`
-	_, err := p.DB.Exec(query, id)
+	result, err := p.DB.Exec(query, id)
 	if err != nil {
-		return err
+		return 0, err
 	}
-
-	return nil
+	rowsDeletedCount, _ := result.RowsAffected()
+	return rowsDeletedCount, nil
 }
 
 func (p *Postgres) GetAll() ([]Todo, error) {
@@ -133,7 +133,7 @@ func (p *Postgres) GetAll() ([]Todo, error) {
 	return todoList, nil
 }
 
-func (p *Postgres) GetOne(id string) (Todo, error) {
+func (p *Postgres) GetById(id string) (Todo, error) {
 	query := `
 		SELECT *
 		FROM todo

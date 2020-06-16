@@ -12,7 +12,7 @@ type todoHandler struct {
 	postgres *Postgres
 }
 
-func (handler *todoHandler) saveTodo(w http.ResponseWriter, r *http.Request) {
+func (handler *todoHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -34,7 +34,7 @@ func (handler *todoHandler) saveTodo(w http.ResponseWriter, r *http.Request) {
 
 	responseOk(w, id)
 }
-func (handler *todoHandler) updateTodo(w http.ResponseWriter, r *http.Request) {
+func (handler *todoHandler) Put(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	idStr := vars["id"]
@@ -58,22 +58,22 @@ func (handler *todoHandler) updateTodo(w http.ResponseWriter, r *http.Request) {
 
 	responseOk(w, id)
 }
-func (handler *todoHandler) deleteTodo(w http.ResponseWriter, r *http.Request) {
+func (handler *todoHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	id := vars["id"]
-	if err := handler.postgres.Delete(id); err != nil {
+	deletedRowsCount, err := handler.postgres.Delete(id)
+	if err != nil {
 		responseError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-
-	w.WriteHeader(http.StatusOK)
+	responseOk(w, deletedRowsCount)
 }
-func (handler *todoHandler) getTodo(w http.ResponseWriter, r *http.Request) {
+func (handler *todoHandler) GetById(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	id := vars["id"]
-	todoList, err := handler.postgres.GetOne(id)
+	todoList, err := handler.postgres.GetById(id)
 	if err != nil {
 		responseError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -81,7 +81,7 @@ func (handler *todoHandler) getTodo(w http.ResponseWriter, r *http.Request) {
 
 	responseOk(w, todoList)
 }
-func (handler *todoHandler) getAllTodo(w http.ResponseWriter, r *http.Request) {
+func (handler *todoHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	todoList, err := handler.postgres.GetAll()
 	if err != nil {
