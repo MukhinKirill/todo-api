@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 type todoHandler struct {
@@ -32,8 +34,10 @@ func (handler *todoHandler) saveTodo(w http.ResponseWriter, r *http.Request) {
 
 	responseOk(w, id)
 }
-func (handler *todoHandler) updateTodo(w http.ResponseWriter, r *http.Request, idStr string) {
+func (handler *todoHandler) updateTodo(w http.ResponseWriter, r *http.Request) {
 
+	vars := mux.Vars(r)
+	idStr := vars["id"]
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		responseError(w, http.StatusInternalServerError, err.Error())
@@ -54,8 +58,10 @@ func (handler *todoHandler) updateTodo(w http.ResponseWriter, r *http.Request, i
 
 	responseOk(w, id)
 }
-func (handler *todoHandler) deleteTodo(w http.ResponseWriter, r *http.Request, id string) {
+func (handler *todoHandler) deleteTodo(w http.ResponseWriter, r *http.Request) {
 
+	vars := mux.Vars(r)
+	id := vars["id"]
 	if err := handler.postgres.Delete(id); err != nil {
 		responseError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -63,8 +69,10 @@ func (handler *todoHandler) deleteTodo(w http.ResponseWriter, r *http.Request, i
 
 	w.WriteHeader(http.StatusOK)
 }
-func (handler *todoHandler) getTodo(w http.ResponseWriter, r *http.Request, id string) {
+func (handler *todoHandler) getTodo(w http.ResponseWriter, r *http.Request) {
 
+	vars := mux.Vars(r)
+	id := vars["id"]
 	todoList, err := handler.postgres.GetOne(id)
 	if err != nil {
 		responseError(w, http.StatusInternalServerError, err.Error())
