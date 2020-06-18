@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	todos "./lib"
+	todos "github.com/MukhinKirill/todo-api/lib"
 )
 
 func main() {
