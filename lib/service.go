@@ -2,9 +2,12 @@ package todos
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
+	"time"
 
+	"github.com/asaskevich/govalidator"
 	"github.com/gorilla/mux"
 )
 
@@ -23,6 +26,16 @@ func (handler *todoHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var todo Todo
 	if err := json.Unmarshal(b, &todo); err != nil {
 		responseError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	todo.NoteDate = time.Now()
+	isValid, err := govalidator.ValidateStruct(todo)
+	if err != nil {
+		responseError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	if !isValid {
+		responseError(w, http.StatusBadRequest, "data is invalid")
 		return
 	}
 
@@ -49,14 +62,27 @@ func (handler *todoHandler) Put(w http.ResponseWriter, r *http.Request) {
 		responseError(w, http.StatusBadRequest, err.Error())
 		return
 	}
+	todo.NoteDate = time.Now()
+	isValid, err := govalidator.ValidateStruct(todo)
+	if err != nil {
+		responseError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	if !isValid {
+		responseError(w, http.StatusBadRequest, "data is invalid")
+		return
+	}
 
 	id, err := handler.postgres.Update(&todo, idStr)
 	if err != nil {
 		responseError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-
-	responseOk(w, id)
+	if id == 0 {
+		responseError(w, http.StatusNotFound, fmt.Sprintf("todo %s not exist", idStr))
+		return
+	}
+	responseOk(w)
 }
 func (handler *todoHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
@@ -67,19 +93,26 @@ func (handler *todoHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		responseError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	responseOk(w, deletedRowsCount)
+	if deletedRowsCount == 0 {
+		responseError(w, http.StatusNoContent, fmt.Sprintf("todo %s not exist", id))
+		return
+	}
+	responseOk(w, nil)
 }
 func (handler *todoHandler) GetById(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	id := vars["id"]
-	todoList, err := handler.postgres.GetById(id)
+	todo, err := handler.postgres.GetById(id)
 	if err != nil {
 		responseError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-
-	responseOk(w, todoList)
+	if todo == nil {
+		responseError(w, http.StatusNoContent, fmt.Sprintf("not fount todo with id:%s", id))
+		return
+	}
+	responseOk(w, *todo)
 }
 func (handler *todoHandler) Get(w http.ResponseWriter, r *http.Request) {
 

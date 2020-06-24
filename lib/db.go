@@ -133,7 +133,7 @@ func (p *Postgres) GetAll() ([]Todo, error) {
 	return todoList, nil
 }
 
-func (p *Postgres) GetById(id string) (Todo, error) {
+func (p *Postgres) GetById(id string) (*Todo, error) {
 	query := `
 		SELECT *
 		FROM todo
@@ -144,17 +144,19 @@ func (p *Postgres) GetById(id string) (Todo, error) {
 	rows, err := p.DB.Query(query, id)
 	defer rows.Close()
 	if err != nil {
-		return todo, err
+		return &todo, err
 	}
 
 	var todoList []Todo
 	for rows.Next() {
 		var t Todo
 		if err := rows.Scan(&t.ID, &t.Title, &t.Note, &t.NoteDate); err != nil {
-			return todo, err
+			return &todo, err
 		}
 		todoList = append(todoList, t)
 	}
-
-	return todoList[0], nil
+	if len(todoList) == 0 {
+		return nil, nil
+	}
+	return &todoList[0], nil
 }
