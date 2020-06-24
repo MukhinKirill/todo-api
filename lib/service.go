@@ -82,7 +82,7 @@ func (handler *todoHandler) Put(w http.ResponseWriter, r *http.Request) {
 		responseError(w, http.StatusNotFound, fmt.Sprintf("todo %s not exist", idStr))
 		return
 	}
-	responseOk(w)
+	responseOk(w, nil)
 }
 func (handler *todoHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
